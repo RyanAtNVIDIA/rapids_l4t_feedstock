@@ -1,0 +1,30 @@
+name: cudf_dev
+channels:
+  - rocketsocket
+  - numba
+  - conda-forge
+  - c4aarch64
+  - archiarm
+  - defaults
+dependencies:
+  - rocketsocket::cudf=0.14.*
+  - rocketsocket::dask-cudf=0.14.*
+  - rocketsocket::cupy>=6.6.0,<8.0.0a0,!=7.1.0
+  - rocketsocket::rmm=0.14.*
+  - numba>=0.49.0
+  - pandas>=0.25,<0.26
+  - rocketsocket::pyarrow=0.15.x
+  - rocketsocket::arrow-cpp=0.15.x
+  - fsspec>=0.6.0
+  - pip
+  - rocketsocket::dask>=2.15.0
+  - rocketsocket::distributed>=2.15.0
+  - rocketsocket::streamz
+  - rocketsocket::dlpack
+  - boost-cpp
+  - double-conversion
+  - rapidjson
+  - flatbuffers
+  - pyzmq
+  - pip:
+      - jupyterlab

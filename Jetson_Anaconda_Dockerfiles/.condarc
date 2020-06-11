@@ -1,0 +1,8 @@
+ssl_verify: false
+channels:
+  - rocketsocket
+  - numba
+  - conda-forge
+  - c4aarch64
+  - archiarm
+  - defaults

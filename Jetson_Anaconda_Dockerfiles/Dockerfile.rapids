@@ -1,0 +1,66 @@
+# syntax=docker/dockerfile:experimental
+
+#=============================================================================
+# Copyright (c) 2018-2020, NVIDIA CORPORATION.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#=============================================================================
+
+
+# Build Basics
+ARG BASE_IMAGE=nvcr.io/nvidia/l4t-base:r32.4.2
+FROM ${BASE_IMAGE}
+LABEL maintainer "Jason Tichy <jtichy@nvidia.com>"
+
+
+# Prepare the conda environment
+RUN wget --quiet https://github.com/Archiconda/build-tools/releases/download/0.2.3/Archiconda3-0.2.3-Linux-aarch64.sh \
+    && chmod +x Archiconda3-0.2.3-Linux-aarch64.sh \
+    && ./Archiconda3-0.2.3-Linux-aarch64.sh -b -p /opt/conda \
+    && /opt/conda/bin/conda update -n base conda \
+    && echo ". /opt/conda/etc/profile.d/conda.sh" >> /root/.bashrc \
+    && rm ./Archiconda3-0.2.3-Linux-aarch64.sh
+
+# Add Tini
+ENV TINI_VERSION v0.19.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-arm64 /usr/bin/tini
+
+
+ENV PATH=${PATH}:/opt/conda/bin
+# Enables "source activate conda"
+SHELL ["/bin/bash", "-c"]
+
+## Make the rapids environment
+ENV RAPIDS_DIR=/rapids
+ENV LD_LIBRARY_PATH=/opt/conda/envs/rapids/lib:${LD_LIBRARY_PATH}
+RUN mkdir -p ${RAPIDS_DIR}/utils 
+COPY start_jupyter.sh ${RAPIDS_DIR}/utils/
+COPY .condarc /opt/conda/.condarc
+COPY .start_jupyter_rapids.sh /.run_in_rapids
+## Copy in the getting started notebooks
+COPY 10min_cudf_cupy.ipynb ${RAPIDS_DIR}/10min_cudf_cupy.ipynb
+COPY 10min_dask_cudf.ipynb ${RAPIDS_DIR}/10min_dask_cudf.ipynb
+COPY rapids_dev_cuda10.2.yml /root/rapids_dev_cuda10.2.yml
+RUN /opt/conda/bin/conda env create --name rapids --file /root/rapids_dev_cuda10.2.yml \
+    && conda clean -ay \
+    && chmod -R ugo+wx /opt/conda ${RAPIDS_DIR} /.run_in_rapids \
+    && chmod +x /usr/bin/tini \
+    && update-alternatives --install /usr/bin/python python /opt/conda/envs/rapids/bin/python 1 \
+    && update-alternatives --install /usr/bin/pip pip /opt/conda/envs/rapids/bin/pip 1
+
+
+
+## All of the startup stuff.
+WORKDIR ${RAPIDS_DIR}
+ENTRYPOINT ["/usr/bin/tini", "--", "/.run_in_rapids" ]
+CMD [ "/bin/bash" ]
