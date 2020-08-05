@@ -18,14 +18,15 @@ dependencies:
   - rocketsocket::rmm=0.14.*
   - numba>=0.49.0
   - pandas>=0.25,<0.26
+  - scipy==1.4.1
   - rocketsocket::pyarrow=0.15.x
   - rocketsocket::arrow-cpp=0.15.x
   - fsspec>=0.6.0
   - pip
-  - rocketsocket::dask>=2.15.0
-  - rocketsocket::distributed>=2.15.0
+  - dask>=2.15.0
+  - distributed>=2.15.0
   - rocketsocket::streamz
-  - rocketsocket::dlpack
+  - dlpack
   - boost-cpp
   - double-conversion
   - rapidjson

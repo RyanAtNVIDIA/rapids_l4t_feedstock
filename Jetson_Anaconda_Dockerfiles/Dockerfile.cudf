@@ -18,18 +18,23 @@
 
 
 # Build Basics
-ARG BASE_IMAGE=nvcr.io/nvidia/l4t-base:r32.4.2
+ARG BASE_IMAGE=nvcr.io/nvidia/l4t-base:r32.4.3
+
 FROM ${BASE_IMAGE}
 LABEL maintainer "Jason Tichy <jtichy@nvidia.com>"
 
+RUN apt-get update && apt-get install -y \
+    --upgrade wget ca-certificates build-essential libffi-dev\
+ && rm -rf /var/lib/apt/lists/*
+
 
 # Prepare the conda environment
-RUN wget --quiet https://github.com/Archiconda/build-tools/releases/download/0.2.3/Archiconda3-0.2.3-Linux-aarch64.sh \
-    && chmod +x Archiconda3-0.2.3-Linux-aarch64.sh \
-    && ./Archiconda3-0.2.3-Linux-aarch64.sh -b -p /opt/conda \
+RUN wget --quiet https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-aarch64.sh \
+    && chmod +x Miniforge3-Linux-aarch64.sh \
+    && ./Miniforge3-Linux-aarch64.sh -b -p /opt/conda \
     && /opt/conda/bin/conda update -n base conda \
     && echo ". /opt/conda/etc/profile.d/conda.sh" >> /root/.bashrc \
-    && rm ./Archiconda3-0.2.3-Linux-aarch64.sh
+    && rm ./Miniforge3-Linux-aarch64.sh
 
 # Add Tini
 ENV TINI_VERSION v0.19.0
